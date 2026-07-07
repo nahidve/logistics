@@ -1,13 +1,40 @@
 import mongoose from "mongoose";
 
-const settingSchema = new mongoose.Schema({
-  companyName: String,
+const settingSchema =
+  new mongoose.Schema(
+    {
+      companyName: String,
 
-  phone: String,
+      logo: String,
 
-  email: String,
+      email: String,
 
-  shipmentPrefix: String
-});
+      phone: String,
 
-export default mongoose.model("Setting", settingSchema);
+      address: String,
+
+      shipmentPrefix: {
+        type: String,
+        default: "LY"
+      },
+
+      timezone: {
+        type: String,
+        default:
+          "Africa/Tripoli"
+      },
+
+      currency: {
+        type: String,
+        default: "LYD"
+      }
+    },
+    {
+      timestamps: true
+    }
+  );
+
+export default mongoose.model(
+  "Setting",
+  settingSchema
+);

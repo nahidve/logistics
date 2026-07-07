@@ -2,16 +2,45 @@ import mongoose from "mongoose";
 
 const warehouseSchema = new mongoose.Schema(
   {
-    code: String,
-    name: String,
+    name: {
+      type: String,
+      required: true
+    },
+
+    code: {
+      type: String,
+      unique: true,
+      required: true
+    },
+
     city: String,
-    manager: String,
-    active: {
-      type: Boolean,
-      default: true
+
+    address: String,
+
+    phone: String,
+
+    managerName: String,
+
+    latitude: Number,
+
+    longitude: Number,
+
+    status: {
+      type: String,
+      enum: ["ACTIVE", "INACTIVE"],
+      default: "ACTIVE"
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
-export default mongoose.model("Warehouse", warehouseSchema);
+warehouseSchema.index({
+  city: 1
+});
+
+export default mongoose.model(
+  "Warehouse",
+  warehouseSchema
+);

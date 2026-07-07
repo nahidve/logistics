@@ -1,64 +1,62 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-
-import Shipment from "../models/Shipment.js";
-import Warehouse from "../models/Warehouse.js";
-import User from "../models/User.js";
-import Setting from "../models/Setting.js";
-
+import dotenv from 'dotenv';
 dotenv.config();
 
-await mongoose.connect(process.env.MONGO_URI);
+import mongoose from "mongoose";
+import connectDB from "../config/db.js";
 
-await Shipment.deleteMany();
-await Warehouse.deleteMany();
-await User.deleteMany();
-await Setting.deleteMany();
+import {
+  seedWarehouses,
+} from "./warehouseSeeder.js";
 
-await Warehouse.insertMany([
-  {
-    code: "TRP",
-    name: "Tripoli Warehouse",
-    city: "Tripoli",
-    manager: "Ahmed"
-  },
-  {
-    code: "MIS",
-    name: "Misrata Warehouse",
-    city: "Misrata",
-    manager: "Ali"
-  },
-  {
-    code: "BEN",
-    name: "Benghazi Warehouse",
-    city: "Benghazi",
-    manager: "Omar"
-  }
-]);
+import {
+  seedCustomers,
+} from "./customerSeeder.js";
 
-for (let i = 1; i <= 50; i++) {
-  await Shipment.create({
-    shipmentNo: `LIB2507${1000 + i}`,
-    sender: `Sender ${i}`,
-    receiver: `Receiver ${i}`,
-    origin: "Tripoli",
-    destination: "Benghazi",
-    status:
-      i % 3 === 0
-        ? "Completed"
-        : i % 2 === 0
-        ? "In Transit"
-        : "Ready Pickup"
+import {
+  seedUsers,
+} from "./userSeeder.js";
+
+import {
+  seedShipments,
+} from "./shipmentSeeder.js";
+
+import Role from "../models/Role.js";
+
+async function run() {
+  await connectDB();
+
+  const warehouses =
+    await seedWarehouses();
+
+  let role = await Role.findOne();
+
+if (!role) {
+  role = await Role.create({
+    name: "Super Admin",
+    description: "System Administrator",
   });
 }
 
-await Setting.create({
-  companyName: "Libya Logistics",
-  phone: "2180000000",
-  email: "admin@libya.com",
-  shipmentPrefix: "LIB"
-});
+  const users =
+    await seedUsers(
+      role._id,
+      warehouses[0]._id
+    );
 
-console.log("Seed Completed");
+  const customers =
+    await seedCustomers();
 
-process.exit();
+  await seedShipments(
+    warehouses,
+    customers,
+    users
+  );
+
+  console.log(
+    "Seed completed"
+  );
+
+  mongoose.disconnect();
+}
+
+run();
